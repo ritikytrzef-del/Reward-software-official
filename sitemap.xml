@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="sitemaps.org">
+    
+    <!-- Main Website Homepage -->
+    <url>
+        <loc>rewardsoftware.store</loc>
+        <lastmod>2026-05-11</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.00</priority>
+    </url>
+
+    <!-- AdsGPTPro Bot Landing Page -->
+    <url>
+        <loc>rewardsoftware.store</loc>
+        <lastmod>2026-05-11</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+</urlset>
+

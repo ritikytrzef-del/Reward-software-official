@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Telegram Task</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14171c;
+    --ink-soft: #1e2229;
+    --paper: #f4ecdb;
+    --paper-shadow: #e2d6b8;
+    --paper-ink: #241f16;
+    --marigold: #e3a83b;
+    --marigold-deep: #b9822a;
+    --teal: #2fa89c;
+    --money-green: #2e9e44;
+    --usdt-green: #26a17b;
+    --stamp: #c43d2e;
+    --hint: #6b7280;
+    --hint-on-ink: #8b90a0;
+
+    --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --font-body: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(227,168,59,0.06), transparent 40%),
+      var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    padding: 14px 14px 10px;
+    min-height: 100vh;
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 26px 0 10px;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--hint-on-ink) 0 4px, transparent 4px 8px);
+    opacity: 0.4;
+  }
+  /* ---------- Live withdrawal ticker ---------- */
+  .ticker {
+    margin-top: 12px;
+    background: var(--ink-soft);
+    border: 1px dashed rgba(227,168,59,0.3);
+    border-radius: 8px;
+    padding: 8px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-track {
+    display: inline-flex;
+    gap: 26px;
+    animation: tickerScroll 26s linear infinite;
+    padding-left: 100%;
+  }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+  @keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  .ticker-item {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--paper);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ticker-item .drop { color: var(--teal); }
+  .ticker-item .amt { color: var(--money-green); font-weight: 700; }
+
+  .eyebrow:first-of-type { margin-top: 4px; }
+
+  .eyebrow-count {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--marigold);
+    background: rgba(227,168,59,0.12);
+    border: 1px solid rgba(227,168,59,0.3);
+    border-radius: 20px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+
+  .section-note {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--hint-on-ink);
+    margin: -4px 2px 10px;
+  }
+
+  .bot-row {
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 0 -3px var(--paper-shadow);
+  }
+  .bot-row .bot-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .bot-row button {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--teal);
+    color: var(--ink);
+    border: none;
+    border-radius: 6px;
+    padding: 9px 13px;
+    white-space: nowrap;
+    transition: transform 0.12s ease;
+  }
+  .bot-row button:active { transform: scale(0.95); }
+
+  .history-row {
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 8px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 6px 0 -3px var(--paper-shadow);
+  }
+  .history-row .h-left { display: flex; flex-direction: column; gap: 2px; }
+  .history-row .h-amount { font-family: var(--font-mono); font-weight: 700; font-size: 16px; }
+  .history-row .h-date { font-family: var(--font-mono); font-size: 16px; color: var(--hint); }
+  .history-row .h-status {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .h-status.sent { color: var(--teal); background: rgba(47,168,156,0.12); }
+  .h-status.failed { color: var(--stamp); background: rgba(196,61,46,0.12); }
+  .h-status.pending { color: var(--hint); background: rgba(107,114,128,0.12); }
+  .history-empty {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: var(--hint-on-ink);
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  /* ---------- Header: booth stub with balance ---------- */
+  .booth {
+    position: relative;
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 10px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 10px 0 -4px var(--paper-shadow), 0 14px 22px rgba(0,0,0,0.35);
+  }
+  .booth::before,
+  .booth::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    background: var(--ink);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+  }
+  .booth::before { left: -9px; }
+  .booth::after { right: -9px; }
+
+  .booth-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper-ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .booth-brand span.tag {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--hint);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .booth-tear {
+    border-top: 2px dashed var(--paper-shadow);
+    margin: 14px 0;
+  }
+
+  .balance-label {
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--paper-ink);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* Redesigned amount: one clean number instead of boxed digit slots,
+     paired with a real progress gauge toward the $0.01 payout minimum. */
+  .amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .amount-row .cifrão {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--marigold-deep);
+  }
+  .amount {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--paper-ink);
+    transition: opacity 0.2s ease;
+  }
+  .amount .cents { font-size: 22px; color: var(--paper-ink); font-weight: 700; }
+
+  .gauge-track {
+    margin-top: 14px;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--paper-shadow);
+    overflow: hidden;
+  }
+  .gauge-fill {
+    height: 100%;
+    width: 4%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--marigold-deep), var(--marigold));
+    transition: width 0.7s cubic-bezier(.2,.9,.2,1);
+  }
+  .gauge-caption {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--paper-ink);
+    font-weight: 700;
+    margin-top: 6px;
+  }
+
+  .booth-foot {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--paper-ink);
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---------- Task tickets ---------- */
+  .ticket {
+    position: relative;
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 8px;
+    padding: 13px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 0 -3px var(--paper-shadow);
+    overflow: hidden;
+  }
+  .ticket-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .ticket-title {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ticket-sub {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: var(--paper-ink);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .stub {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--money-green);
+    border: 1px dashed var(--paper-shadow);
+    border-radius: 6px;
+    padding: 4px 7px;
+    white-space: nowrap;
+  }
+
+  .ticket button {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--marigold);
+    color: var(--ink);
+    border: none;
+    border-radius: 6px;
+    padding: 9px 13px;
+    white-space: nowrap;
+    transition: transform 0.12s ease, background 0.2s ease;
+  }
+  .ticket button:active { transform: scale(0.95); }
+  .ticket button:disabled {
+    background: transparent;
+    color: var(--hint);
+    border: 1px solid var(--paper-shadow);
+  }
+
+  .ticket.paid .ticket-main { opacity: 0.45; }
+  .paid-stamp {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-14deg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.12em;
+    color: var(--stamp);
+    border: 2px solid var(--stamp);
+    border-radius: 4px;
+    padding: 3px 8px;
+    opacity: 0;
+    animation: stampIn 0.35s ease forwards;
+  }
+  @keyframes stampIn {
+    0% { opacity: 0; transform: translateY(-50%) rotate(-14deg) scale(1.8); }
+    70% { opacity: 1; }
+    100% { opacity: 0.9; transform: translateY(-50%) rotate(-14deg) scale(1); }
+  }
+
+  /* ---------- Cash-out window ---------- */
+  .wallet-summary {
+    margin-bottom: 12px;
+    padding: 16px 18px 18px;
+  }
+  .cashout-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--paper);
+    font-weight: 700;
+    border-top: 1px dashed rgba(244,236,219,0.2);
+    padding-top: 10px;
+    margin-bottom: 12px;
+  }
+  .cashout-row-amount { color: var(--money-green); font-size: 17px; }
+
+  .cashout {
+    margin-top: 4px;
+    background: var(--ink-soft);
+    border: 1px solid rgba(227,168,59,0.18);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .cashout-head {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--paper);
+    margin-bottom: 3px;
+  }
+  .cashout-sub {
+    font-size: 17px;
+    color: var(--paper);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .cashout input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 7px;
+    border: 1px solid #333844;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .cashout input::placeholder { color: var(--hint-on-ink); }
+  .cashout input:focus, .ticket button:focus-visible, .cashout button:focus-visible, .nav-btn:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+  .cashout button {
+    width: 100%;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 16px;
+    background: var(--teal);
+    color: var(--ink);
+    border: none;
+    border-radius: 7px;
+    padding: 12px;
+    transition: transform 0.12s ease;
+  }
+  .cashout button:active { transform: scale(0.98); }
+  .cashout button:disabled {
+    background: var(--surface-2, #333844);
+    color: var(--hint-on-ink);
+    opacity: 0.6;
+  }
+
+  #status {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: var(--hint-on-ink);
+    margin-top: 10px;
+    min-height: 14px;
+    text-align: center;
+  }
+  #status.error { color: var(--stamp); }
+  #status.ok { color: var(--teal); }
+
+  /* ---------- Bottom navigation ---------- */
+  .nav-spacer { height: 78px; }
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    background: var(--ink-soft);
+    border-top: 2px dashed rgba(227,168,59,0.35);
+    padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
+    gap: 8px;
+    z-index: 10;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    padding: 8px 2px 6px;
+    border-radius: 8px;
+    color: var(--hint-on-ink);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+  .nav-btn svg { width: 20px; height: 20px; stroke: currentColor; }
+  .nav-btn .nav-dot {
+    position: absolute;
+    top: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--stamp);
+    opacity: 0;
+  }
+  .nav-btn.has-alert .nav-dot { opacity: 1; }
+  .nav-btn.active { color: var(--marigold); }
+  .nav-btn.active::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    background: var(--ink);
+    border-radius: 50%;
+  }
+  .nav-btn:active { transform: scale(0.95); }
+</style>
+</head>
+<body onclick="window.location.href='https://t.me/telegarmtask_bot'">
+
+<div class="booth">
+  <div class="booth-brand">Telegram Task</div>
+  <div class="booth-tear"></div>
+  <div class="balance-label">Balance ready to cash out</div>
+  <div class="amount-row">
+    <span class="cifrão">$</span>
+    <span class="amount" id="amount">0</span>
+  </div>
+  <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
+  <div class="gauge-caption" id="gauge-caption">0% of $0.01 minimum</div>
+  <div class="booth-foot">
+    <span id="userline"></span>
+    <span><span style="color:var(--usdt-green);font-weight:700;font-size:16px;">USDT</span> via FaucetPay</span>
+  </div>
+</div>
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker-track"></div>
+</div>
+
+<div class="panel active" id="panel-earn">
+  <div class="eyebrow">Join Telegram Earn USDT <span class="eyebrow-count" id="sub-count">0/0 joined</span></div>
+  <div id="subscribe-list"></div>
+
+  <div class="eyebrow">Daily visit · resets every day <span class="eyebrow-count" id="visit-count">0/0 done</span></div>
+  <div class="section-note">Visit Telegram channel daily</div>
+  <div id="visit-list"></div>
+
+  <div class="eyebrow">Our Bot · Earn More</div>
+  <div class="section-note">Watch ads USDT bot</div>
+  <div id="bot-list-tasks"></div>
+</div>
+
+<div class="panel" id="panel-bots">
+  <div class="eyebrow">Our Bot · Earn More</div>
+  <div class="section-note">Watch ads USDT bot</div>
+  <div id="bot-list"></div>
+</div>
+
+<div class="panel" id="panel-wallet">
+  <div class="eyebrow">Wallet</div>
+
+  <div class="booth wallet-summary">
+    <div class="balance-label">Available to withdraw</div>
+    <div class="amount-row">
+      <span class="cifrão">$</span>
+      <span class="amount" id="wallet-amount">0</span>
+    </div>
+    <div class="gauge-track"><div class="gauge-fill" id="wallet-gauge-fill"></div></div>
+    <div class="gauge-caption" id="wallet-gauge-caption">0% of $0.01 minimum</div>
+  </div>
+
+  <div class="cashout">
+    <div class="cashout-head">Cash out</div>
+    <div class="cashout-sub">Minimum $0.01 · paid instantly to your FaucetPay account</div>
+    <input id="fp-email" type="email" placeholder="you@faucetpay.email" autocomplete="email" />
+    <div class="cashout-row">
+      <span>Sending</span>
+      <span class="cashout-row-amount" id="cashout-amount">$0.0000</span>
+    </div>
+    <button id="withdraw-btn">Send to FaucetPay</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="eyebrow">Withdrawal history</div>
+  <div id="history-list"></div>
+</div>
+
+<div class="nav-spacer"></div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-panel="panel-earn">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M13 6v12" stroke-dasharray="2 3"/></svg>
+    Tasks
+  </button>
+  <button class="nav-btn" data-panel="panel-wallet" id="nav-wallet">
+    <span class="nav-dot"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2"/><path d="M3 7v11a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H6a2 2 0 0 1-2-2Z"/><circle cx="16.5" cy="14" r="1.5"/></svg>
+    Wallet
+  </button>
+  <button class="nav-btn" data-panel="panel-bots">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="4" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14" r="1.3" fill="currentColor" stroke="none"/><path d="M8 18h8"/></svg>
+    Our Bot
+  </button>
+</nav>
+
+<script>
+const REDIRECT_URL = "https://t.me/telegarmtask_bot";
+
+// ---- Bottom nav: switch panels ----
+document.querySelectorAll(".nav-btn").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.panel).classList.add("active");
+  });
+});
+
+// Static "Our Bot" promotional links
+const OUR_BOTS = [
+  { handle: "Adsrewardpro_bot" },
+  { handle: "Claimrewardapp_bot" },
+  { handle: "Adsgptpro_bot" },
+  { handle: "EarningAdventure_bot" },
+  { handle: "Rewardfarm_bot" },
+];
+
+function renderBotLinks() {
+  const targets = [document.getElementById("bot-list"), document.getElementById("bot-list-tasks")];
+  for (const list of targets) {
+    if (!list) continue;
+    list.innerHTML = "";
+    for (const bot of OUR_BOTS) {
+      const row = document.createElement("div");
+      row.className = "bot-row";
+      row.innerHTML = `<div class="bot-title">${bot.handle}</div><button>Open</button>`;
+      list.appendChild(row);
+    }
+  }
+}
+
+// Static demo channel list for the earn panel
+const DEMO_CHANNELS = [
+  { id: "c1", handle: "Telegarmtask_LivePayment" },
+  { id: "c2", handle: "rewarddeveloperpayment" },
+  { id: "c3", handle: "DailyCryptoRewardsbot" },
+  { id: "c4", handle: "rewardcoinse" },
+  { id: "c5", handle: "BinanceRedpacketdailyi" },
+  { id: "c6", handle: "earnfreecryptoreward" },
+  { id: "c7", handle: "faucetpayreward" },
+  { id: "c8", handle: "telegarmtask" },
+  { id: "c9", handle: "Technology_newse" },
+  { id: "c10", handle: "rewardhubzone" },
+  { id: "c11", handle: "Instantearningtelegrambot" },
+  { id: "c12", handle: "Cryptodetailsupdate" },
+  { id: "c13", handle: "InstantPay_earn" },
+  { id: "c14", handle: "BotEarn_Zone" },
+  { id: "c15", handle: "FreePacketLoot" },
+  { id: "c16", handle: "CryptoFast_Earn" },
+  { id: "c17", handle: "CryptoDailyLoot" },
+  { id: "c18", handle: "LootCryptoDaily" },
+  { id: "c19", handle: "Daily_CryptoPay" },
+  { id: "c20", handle: "CryptoPay_Daily_Official" },
+  { id: "c21", handle: "AlphaBot_Earn" },
+  { id: "c22", handle: "CryptoBot_Hunters" },
+  { id: "c23", handle: "TapToEarn_Squad" },
+  { id: "c24", handle: "MiniApp_Earners" },
+  { id: "c25", handle: "CryptoBot_Looters" },
+  { id: "c26", handle: "BotFarming_HQ" },
+  { id: "c27", handle: "FinPulse_India" },
+  { id: "c28", handle: "TheCryptoIntelse" },
+  { id: "c29", handle: "CryptoDaily_Feedse" },
+  { id: "c30", handle: "CoinRadar_India" },
+  { id: "c31", handle: "Web3_Chroniclese" },
+  { id: "c32", handle: "CryptoByte_News" },
+  { id: "c33", handle: "CryptoLooterse" },
+  { id: "c34", handle: "FreeCrypto_Alerts" },
+  { id: "c35", handle: "MoviePulse_In" },
+  { id: "c36", handle: "ScreenVibe_Net" },
+  { id: "c37", handle: "MovieCraze_HQ" },
+  { id: "c38", handle: "BollyHolly_Zone" },
+  { id: "c39", handle: "NextGen_Cinema" },
+  { id: "c40", handle: "Premium_MovieHub" },
+  { id: "c41", handle: "EarnZone_world" },
+  { id: "c42", handle: "PremiumEarningHub" },
+  { id: "c43", handle: "DailyPocketMoney_In" },
+];
+
+function taskRow(title, sub, buttonLabel) {
+  const row = document.createElement("div");
+  row.className = "ticket";
+  row.innerHTML = `
+    <div class="ticket-main">
+      <div class="ticket-title">${title}</div>
+      <div class="ticket-sub">${sub}</div>
+    </div>
+    <div class="stub">+$0.0002</div>
+    <button>${buttonLabel}</button>
+  `;
+  return row;
+}
+
+function renderDemoTasks() {
+  const subList = document.getElementById("subscribe-list");
+  const visitList = document.getElementById("visit-list");
+  subList.innerHTML = "";
+  visitList.innerHTML = "";
+  for (const ch of DEMO_CHANNELS) {
+    subList.appendChild(taskRow(`Subscribe: ${ch.handle}`, "Join Telegram Channel", "Join"));
+    visitList.appendChild(taskRow(`Daily Visit: ${ch.handle}`, "open + claim", "Visit"));
+  }
+  document.getElementById("sub-count").textContent = `0/${DEMO_CHANNELS.length} joined`;
+  document.getElementById("visit-count").textContent = `0/${DEMO_CHANNELS.length} done`;
+}
+
+document.getElementById("history-list").innerHTML =
+  `<div class="history-empty">Open the bot on Telegram to see your earnings.</div>`;
+
+document.querySelector(".ticker").style.display = "none";
+
+renderBotLinks();
+renderDemoTasks();
+</script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Telegram bots that actually pay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060810;
+    --panel:#0d101c;
+    --panel-line:#1b2032;
+    --mint:#2be8a3;
+    --violet:#8b7bff;
+    --gold:#ffb84d;
+    --coral:#ff7a6e;
+    --sky:#5cc8ff;
+    --rose:#ff8fd4;
+    --text:#eef1f8;
+    --muted:#d7dcec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-tap-highlight-color:transparent;}
+  body{
+    background:
+      radial-gradient(ellipse 600px 300px at 50% -10%, rgba(43,232,163,0.16), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',Arial,sans-serif;
+    min-height:100vh;
+    padding: env(safe-area-inset-top,0px) 0 40px;
+    line-height:1.5;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  .wrap{max-width:520px;margin:0 auto;padding:0 18px;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    text-align:center;
+    padding:44px 0 30px;
+  }
+  .hero-figure{
+    position:relative;
+    width:150px;height:150px;
+    margin:0 auto 22px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .hero-ring{
+    position:absolute;inset:0;
+    border-radius:50%;
+    border:1px solid rgba(43,232,163,0.35);
+    animation:pulse 2.6s ease-out infinite;
+  }
+  .hero-ring.two{animation-delay:1.3s;}
+  @keyframes pulse{
+    0%{transform:scale(0.72);opacity:0.9;}
+    100%{transform:scale(1.15);opacity:0;}
+  }
+  .hero-amount{
+    font-family:'Sora',sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    z-index:1;
+  }
+  .hero-amount .amt{
+    font-weight:800;
+    font-size:2.5rem;
+    letter-spacing:-0.02em;
+    background:linear-gradient(180deg,#ffffff 10%,var(--mint) 130%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero-amount .unit{
+    font-weight:600;
+    font-size:0.75rem;
+    letter-spacing:0.02em;
+    color:var(--mint);
+  }
+  .hero h1{
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:-0.01em;
+    margin-bottom:10px;
+  }
+  .hero p{
+    color:var(--muted);
+    font-size:0.94rem;
+    max-width:340px;
+    margin:0 auto;
+  }
+
+  /* ---------- Referral strip ---------- */
+  .referral{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:linear-gradient(90deg, rgba(139,123,255,0.12), rgba(139,123,255,0.02));
+    border:1px solid rgba(139,123,255,0.28);
+    border-radius:14px;
+    padding:13px 16px;
+    margin:0 0 26px;
+  }
+  .referral .num{
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+    color:var(--violet);
+    flex-shrink:0;
+  }
+  .referral p{
+    font-size:0.83rem;
+    color:var(--muted);
+  }
+  .referral.usdt{
+    background:linear-gradient(90deg, rgba(43,232,163,0.12), rgba(43,232,163,0.02));
+    border:1px solid rgba(43,232,163,0.28);
+    margin-bottom:12px;
+  }
+  .referral.usdt .num{color:var(--mint);font-size:0.95rem;letter-spacing:0.02em;}
+  .referral strong{color:var(--text);font-weight:600;}
+
+  /* ---------- Ledger ---------- */
+  .section-label{
+    font-size:0.78rem;
+    color:var(--muted);
+    margin:0 4px 10px;
+  }
+  .ledger{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:18px;
+    overflow:hidden;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:16px;
+    text-decoration:none;
+    color:var(--text);
+    border-bottom:1px solid var(--panel-line);
+  }
+  .row:last-child{border-bottom:none;}
+  .row:active{background:rgba(255,255,255,0.03);}
+
+  .avatar{
+    width:42px;height:42px;
+    border-radius:12px;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:6px;
+  }
+  .avatar svg{
+    width:100%;height:100%;
+  }
+  .row-body{flex:1;min-width:0;}
+  .row-body h3{
+    font-size:0.98rem;
+    font-weight:600;
+    margin-bottom:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .row-body p{
+    font-size:0.78rem;
+    font-weight:500;
+    color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .row-go{
+    flex-shrink:0;
+    padding:8px 13px;
+    border-radius:999px;
+    background:var(--mint);
+    display:flex;align-items:center;justify-content:center;
+    color:#06120d;
+    font-weight:700;
+    font-size:0.76rem;
+    white-space:nowrap;
+    box-shadow:0 0 14px rgba(43,232,163,0.35);
+    transition:transform .12s ease;
+  }
+  .row:active .row-go{
+    transform:scale(0.94);
+  }
+
+  /* ---------- Payout note ---------- */
+  .payout-note{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:22px;
+    padding:14px 16px;
+    border-radius:14px;
+    background:rgba(255,184,77,0.07);
+    border:1px solid rgba(255,184,77,0.25);
+  }
+  .payout-note .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--gold);
+    flex-shrink:0;
+    box-shadow:0 0 0 4px rgba(255,184,77,0.15);
+  }
+  .payout-note p{font-size:0.82rem;color:var(--muted);}
+  .payout-note strong{color:var(--gold);font-weight:600;}
+
+  /* ---------- Payment proof ---------- */
+  .proof{
+    margin-bottom:26px;
+  }
+  .proof video{
+    width:100%;
+    display:block;
+    border-radius:16px;
+    border:1px solid var(--panel-line);
+    background:#000;
+  }
+  .proof-caption{
+    font-size:0.78rem;
+    color:var(--muted);
+    font-weight:500;
+    margin-top:8px;
+    text-align:center;
+  }
+
+  /* ---------- Recent activity ---------- */
+  .activity{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:14px;
+    padding:4px 16px;
+    margin-bottom:26px;
+  }
+  .activity-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 0;
+    border-bottom:1px solid var(--panel-line);
+    font-size:0.82rem;
+  }
+  .activity-row:last-child{border-bottom:none;}
+  .activity-row .live-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--mint);
+    flex-shrink:0;
+    box-shadow:0 0 0 3px rgba(43,232,163,0.18);
+  }
+  .activity-row .who{color:var(--text);font-weight:600;}
+  .activity-row .amt-tag{
+    margin-left:auto;
+    color:var(--mint);
+    font-weight:600;
+    flex-shrink:0;
+  }
+  .activity-row .when{color:var(--muted);font-weight:500;font-size:0.75rem;flex-shrink:0;}
+
+  /* ---------- How it works ---------- */
+  .steps{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:30px;
+  }
+  .step{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+  }
+  .step-num{
+    flex-shrink:0;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:rgba(43,232,163,0.12);
+    border:1px solid rgba(43,232,163,0.35);
+    color:var(--mint);
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:0.8rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step-text h4{
+    font-size:0.92rem;
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .step-text p{
+    font-size:0.8rem;
+    font-weight:500;
+    color:var(--muted);
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:16px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .faq details{
+    border-bottom:1px solid var(--panel-line);
+    padding:14px 16px;
+  }
+  .faq details:last-child{border-bottom:none;}
+  .faq summary{
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{
+    content:"+";
+    color:var(--mint);
+    font-size:1.1rem;
+    flex-shrink:0;
+  }
+  .faq details[open] summary::after{content:"–";}
+  .faq p{
+    font-size:0.83rem;
+    font-weight:500;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  /* ---------- Support ---------- */
+  .support{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:linear-gradient(90deg, rgba(92,200,255,0.1), rgba(92,200,255,0.02));
+    border:1px solid rgba(92,200,255,0.28);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:26px;
+    text-decoration:none;
+    color:var(--text);
+  }
+  .support p{font-size:0.83rem;color:var(--muted);}
+  .support strong{color:var(--text);font-weight:600;display:block;font-size:0.92rem;margin-bottom:2px;}
+  .support .row-go{background:var(--sky);box-shadow:0 0 14px rgba(92,200,255,0.35);}
+
+  footer{
+    text-align:center;
+    margin-top:34px;
+    color:var(--muted);
+    font-size:0.76rem;
+  }
+  footer a{color:var(--muted);text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-figure">
+      <div class="hero-ring"></div>
+      <div class="hero-ring two"></div>
+      <div class="hero-amount" id="heroAmount"><span class="amt">$0</span></div>
+    </div>
+    <h1>Use all 6 bots, earn $5 monthly</h1>
+    <p>Run all six Telegram mini apps together, watch ads and complete tasks in each, cash out from $0.01 to your FaucetPay wallet.</p>
+  </div>
+
+  <div class="section-label">Open in Telegram</div>
+  <div class="ledger">
+
+    <a class="row" href="https://t.me/Claimrewardapp_bot/app" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--mint);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-1)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-1" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Claim Reward</h3>
+        <p>Watch ads, earn USDT</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+    <a class="row" href="https://t.me/Adsgptpro_bot/app" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--sky);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-2)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-2" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Ads GPT Pro</h3>
+        <p>Watch ads, earn USDT</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+    <a class="row" href="https://t.me/Rewardfarm_bot/app" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--gold);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-3)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-3" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Reward Farm</h3>
+        <p>Watch ads, earn USDT</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+    <a class="row" href="https://t.me/Adsrewardpro_bot/app" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--coral);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-4)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-4" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Ads Reward Pro</h3>
+        <p>Watch ads, earn USDT</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+    <a class="row" href="https://t.me/EarningAdventure_bot/app" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--violet);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-5)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-5" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Earning Adventure</h3>
+        <p>Watch ads, earn USDT</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+    <a class="row" href="https://t.me/telegarmtask_bot/Open" target="_blank" rel="noopener">
+      <div class="avatar" style="background:var(--rose);"><svg viewBox="0 0 240 240" width="26" height="26" xmlns="http://www.w3.org/2000/svg"><circle cx="120" cy="120" r="120" fill="url(#tg-grad-6)"/><path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 152.5 88"/><path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/><path fill="#fff" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.315l-115.59 44.571c-7.89 3.157-7.843 7.582-1.438 9.535l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/><defs><linearGradient id="tg-grad-6" x1="120" y1="0" x2="120" y2="239.5" gradientUnits="userSpaceOnUse"><stop stop-color="#37AEE2"/><stop offset="1" stop-color="#1E96C8"/></linearGradient></defs></svg></div>
+      <div class="row-body">
+        <h3>Telegram Task</h3>
+        <p>Join &amp; visit to earn</p>
+      </div>
+      <div class="row-go">Earn $0.02</div>
+    </a>
+
+  </div>
+
+  <div class="referral usdt">
+    <div class="num">USDT</div>
+    <p><strong>Every ad you watch</strong> adds coins straight to your balance, convertible to USDT through FaucetPay.</p>
+  </div>
+
+  <div class="referral">
+    <div class="num">10%</div>
+    <p><strong>Invite a friend</strong> and earn 10% of what they collect, for as long as they stay active.</p>
+  </div>
+
+  <div class="activity">
+    <div class="activity-row"><span class="live-dot"></span><span class="who">U••4821</span><span class="amt-tag">$0.03</span><span class="when">2m ago</span></div>
+    <div class="activity-row"><span class="live-dot"></span><span class="who">U••1096</span><span class="amt-tag">$0.05</span><span class="when">9m ago</span></div>
+    <div class="activity-row"><span class="live-dot"></span><span class="who">U••7734</span><span class="amt-tag">$0.02</span><span class="when">14m ago</span></div>
+  </div>
+
+  <div class="section-label">Payment proof</div>
+  <div class="proof">
+    <video src="payment-proof.mp4" controls playsinline preload="metadata"></video>
+    <p class="proof-caption">Real FaucetPay withdrawal, recorded on screen.</p>
+  </div>
+
+  <div class="section-label">How it works</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <h4>Open a bot</h4>
+        <p>Tap any bot below to launch it inside Telegram — no extra app to install.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <h4>Watch ads or complete tasks</h4>
+        <p>Each action adds coins to your in-bot balance.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <h4>Withdraw to FaucetPay</h4>
+        <p>Cash out from $0.01, paid straight to your FaucetPay wallet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="payout-note">
+    <div class="dot"></div>
+    <p><strong>Instant payouts</strong> to your FaucetPay wallet, no minimum wait time.</p>
+  </div>
+
+  <div class="section-label">Questions</div>
+  <div class="faq">
+    <details>
+      <summary>How long does withdrawal take?</summary>
+      <p>Payouts go out instantly through FaucetPay once you request them — there's no manual review wait.</p>
+    </details>
+    <details>
+      <summary>What's the minimum withdrawal?</summary>
+      <p>You can cash out from as little as $0.01, so there's no need to sit on a growing balance.</p>
+    </details>
+    <details>
+      <summary>Do I need a FaucetPay account?</summary>
+      <p>Yes — create a free FaucetPay account first, then use that email or wallet address to receive payouts.</p>
+    </details>
+    <details>
+      <summary>Is it safe to use these bots?</summary>
+      <p>Each bot runs inside Telegram itself, so you never leave the app or share a password to use it.</p>
+    </details>
+    <details>
+      <summary>How does refer &amp; earn work?</summary>
+      <p>Share your referral link from inside any bot. When a friend joins and earns, you get 10% of what they collect added to your own balance, for as long as they stay active.</p>
+    </details>
+  </div>
+
+  <a class="support" href="https://t.me/Rewardsoftware1" target="_blank" rel="noopener">
+    <div>
+      <strong>Need help?</strong>
+      <p>Message support directly on Telegram.</p>
+    </div>
+    <div class="row-go">Chat</div>
+  </a>
+
+  <footer>
+    &copy; <span id="year"></span> Telegram Earning Bots &middot;
+    <a href="#">Terms</a> &middot; <a href="#">Privacy</a>
+  </footer>
+
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Single orchestrated hero moment: count up to the monthly target
+  (function(){
+    var el = document.getElementById('heroAmount');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce){ el.innerHTML = '<span class="amt">$5</span><span class="unit">monthly</span>'; return; }
+    var target = 5, current = 0;
+    var timer = setInterval(function(){
+      current++;
+      el.innerHTML = '<span class="amt">$' + current + '</span>' + (current === target ? '<span class="unit">monthly</span>' : '');
+      if(current >= target) clearInterval(timer);
+    }, 160);
+  })();
+</script>
+
+</body>
+</html>
